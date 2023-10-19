@@ -2,33 +2,69 @@ package org.example;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Scanner;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
 
         try{
-            FileReader myFile = new FileReader("employees.csv");
-            BufferedReader ReadFile = new BufferedReader(myFile);
+            Scanner scanner = new Scanner(System.in);
+
+            System.out.println("Enter the name of the employee file to process: ");
+            String userInputForFile = scanner.nextLine();
+
+            FileReader myFile = new FileReader(userInputForFile +".csv");
+            BufferedReader readFile = new BufferedReader(myFile);
+
+            System.out.println("Enter the name of the payment file to create: ");
+            String userInputForFileOutput = scanner.nextLine();
+
+            boolean csv = userInputForFileOutput.contains("csv");
+
+
+            FileWriter writer = new FileWriter(userInputForFileOutput);
 
             String readLine;
-            readLine = ReadFile.readLine();
-            while((readLine = ReadFile.readLine()) !=null)
+            readLine = readFile.readLine();
+            if(csv) {
+                writer.write("id|name|gross pay");
+            }
+            else{
+                writer.write("[\n");
+            }
+            while((readLine = readFile.readLine()) !=null)
             {
                 //readLine = "10|Dana Wyatt|52.5|12.50"
-                String [] SeparatedLine = readLine.split("\\|");
-                // SeparatedLine = ["10","Dana Wyatt", "52.5","12.50"]
-                int id = Integer.parseInt(SeparatedLine[0]);
-                String name = SeparatedLine[1];
-                double hoursworked = Double.parseDouble(SeparatedLine[2]);
-                double rate = Double.parseDouble(SeparatedLine[3]);
-                Employee e1 = new Employee(id, name, hoursworked, rate);
-                System.out.printf("Employee Id: %d\nEmployee: %s\nPay: %.2f\n", e1.getEmployeeId(), e1.getName(), e1.getGrossPay());
+                String [] separatedLine = readLine.split("\\|");
+                // separatedLine = ["10","Dana Wyatt", "52.5","12.50"]
+                int id = Integer.parseInt(separatedLine[0]);
+                String name = separatedLine[1];
+                double hoursWorked = Double.parseDouble(separatedLine[2]);
+                double rate = Double.parseDouble(separatedLine[3]);
+
+                Employee e1 = new Employee(id, name, hoursWorked, rate);
+                System.out.printf("Employee Id: %d\nEmployee: %s\nPay: %.2f\n", e1.getEmployeeId(),e1.getName(), e1.getGrossPay());
                 System.out.println();
+                if(csv){
+
+                    writer.write(e1.getEmployeeId()+"|"+ e1.getName() + "|"+ e1.getGrossPay()+ "\n");
+
+                }
+                else{
+                    String s = String.format("""
+   {"id":" %d","name": "%s", "Gross-Pay": "%.2f"},
+   """, e1.getEmployeeId(), e1.getName(), e1.getGrossPay());
+                    writer.write(s);
+                }
             }
-            ReadFile.close();
+            if(!csv)
+            {
+                writer.write("]");
+            }
+            readFile.close();
+            writer.close();
 
         }
         catch(IOException e){
